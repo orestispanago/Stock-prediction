@@ -9,15 +9,18 @@ import matplotlib.pyplot as plt
 
 plt.style.use('fivethirtyeight')
 
-df = web.DataReader('NFLX', data_source='yahoo', start='2012-01-01', end='2019-12-17') 
+stock_name = "ZRX-EUR"
+start_date = '2016-01-01'
+end_date = '2021-02-09'
+df = web.DataReader(stock_name, data_source='yahoo', start=start_date, end=end_date) 
 
 
-plt.figure(figsize=(16,8))
-plt.title('Close Price History')
-plt.plot(df['Close'])
-plt.xlabel('Date',fontsize=18)
-plt.ylabel('Close Price USD ($)',fontsize=18)
-plt.show()
+# plt.figure(figsize=(16,8))
+# plt.title('Close Price History')
+# plt.plot(df['Close'])
+# plt.xlabel('Date',fontsize=18)
+# plt.ylabel('Close Price USD ($)',fontsize=18)
+# plt.show()
 
 #Create a new dataframe with only the 'Close' column
 data = df.filter(['Close'])#Converting the dataframe to a numpy array
@@ -89,9 +92,9 @@ train = data[:training_data_len]
 valid = data[training_data_len:]
 valid['Predictions'] = predictions#Visualize the data
 plt.figure(figsize=(16,8))
-plt.title('Model')
+plt.title(stock_name)
 plt.xlabel('Date', fontsize=18)
-plt.ylabel('Close Price USD ($)', fontsize=18)
+plt.ylabel('Close Price', fontsize=18)
 plt.plot(train['Close'])
 plt.plot(valid[['Close', 'Predictions']])
 plt.legend(['Train', 'Val', 'Predictions'], loc='lower right')
@@ -99,8 +102,8 @@ plt.show()
 
 
 #Get the quote
-apple_quote = web.DataReader('AAPL', data_source='yahoo', start='2012-01-01', end='2019-12-17')#Create a new dataframe
-new_df = apple_quote.filter(['Close'])#Get teh last 60 day closing price 
+quote = web.DataReader(stock_name, data_source='yahoo',start=start_date, end=end_date)#Create a new dataframe
+new_df = quote.filter(['Close'])#Get teh last 60 day closing price 
 last_60_days = new_df[-60:].values#Scale the data to be values between 0 and 1
 last_60_days_scaled = scaler.transform(last_60_days)#Create an empty list
 X_test = []#Append teh past 60 days
@@ -109,8 +112,10 @@ X_test = np.array(X_test)#Reshape the data
 X_test = np.reshape(X_test, (X_test.shape[0], X_test.shape[1], 1))#Get the predicted scaled price
 pred_price = model.predict(X_test)#undo the scaling 
 pred_price = scaler.inverse_transform(pred_price)
-print(pred_price)
+print(quote.index[-1], quote["Close"][-1])
+print("Prediction:", pred_price[0][0])
 
 #Get the quote
-apple_quote2 = web.DataReader('AAPL', data_source='yahoo', start='2019-12-18', end='2019-12-18')
-print(apple_quote2['Close'])
+quote2 = web.DataReader(stock_name, data_source='yahoo',start=start_date, 
+                        end=pd.to_datetime('today').normalize())#Create a new dataframe
+print(quote2.index[-1], quote2["Close"][-1])
